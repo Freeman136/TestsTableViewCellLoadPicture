@@ -5,17 +5,50 @@
 
 import UIKit
 
-class MyTableView: UITableView  {
+
+class MyTableView: UITableView {
     
+    override init(frame: CGRect, style: UITableView.Style) {
+        super.init(frame: frame, style: style)
+        setup()
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setup()
+    }
+    
+    private func setup() {
+        separatorStyle = .singleLine
+        backgroundColor = UIColor.red
+        
+        register(CustomCell.self, forCellReuseIdentifier: CustomCell.reuseIdentifire)
+        dataSource = self
+        delegate = self
+        frame = bounds
+    }
 }
+
+extension MyTableView: UITableViewDataSource, UITableViewDelegate {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        // Возвращает количество строк в таблице
+        return 0
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        // Возвращает ячейку для каждой строки
+        let cell = tableView.dequeueReusableCell(withIdentifier: CustomCell.reuseIdentifire, for: indexPath) as! CustomCell
+        return cell
+    }
+}
+
 
 
 //MARK: ViewController
 class ViewController: UIViewController {
     let imageCache = NSCache<NSString, UIImage > ()
-    let tableView = UITableView()
     
-    //	let tableView = MyTableView()
+    let tableView = MyTableView()
     
     
     private var models: [Cat] = []
@@ -23,19 +56,19 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         loadCats()
-        setupTableView()
         setupBinding()
     }
     
-    private func setupTableView() {
-        tableView.register(CustomCell.self, forCellReuseIdentifier: CustomCell.reuseIdentifire)
-        tableView.dataSource = self
-        tableView.delegate = self
-        tableView.frame = view.bounds
-    }
+    
     
     private func setupBinding() {
+        tableView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(tableView)
+        tableView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+        tableView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        tableView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
+        tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+        
     }
     
     private func loadCats() {
@@ -77,20 +110,18 @@ class ViewController: UIViewController {
         }
     }
 }
-    // MARK: ViewController: UITableViewDataSource
-    extension ViewController: UITableViewDataSource {
-        func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int { models.count }
-        func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: CustomCell.reuseIdentifire, for: indexPath) as? CustomCell else {
-                return UITableViewCell()
-            }
-            if models.count < indexPath.row {
-                loadImage(models[indexPath.row].url, image: cell.imageCell)
-            }
-                return cell
+// MARK: ViewController: UITableViewDataSource
+extension ViewController: UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int { models.count }
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: CustomCell.reuseIdentifire, for: indexPath) as? CustomCell else {
+            return UITableViewCell()
         }
+        loadImage(models[indexPath.row].url, image: cell.imageCell)
+        return cell
     }
-    extension ViewController: UITableViewDelegate {
-        func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat { 150 }
-    }
-    
+}
+extension ViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat { 150 }
+}
+
