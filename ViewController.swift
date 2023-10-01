@@ -7,7 +7,9 @@ import UIKit
 
 
 class MyTableView: UITableView {
-    
+    var models: [Cat] = []
+    let imageCache = NSCache<NSString, UIImage > ()
+
     override init(frame: CGRect, style: UITableView.Style) {
         super.init(frame: frame, style: style)
         setup()
@@ -18,6 +20,14 @@ class MyTableView: UITableView {
         setup()
     }
     
+    private func loadImage(_ url: String, image: UIImageView) {
+        // Check if the image is already cached
+        if let cachedImage = imageCache.object(forKey: url as NSString) {
+            image.image = cachedImage
+            return
+        }
+    }
+        
     private func setup() {
         separatorStyle = .singleLine
         backgroundColor = UIColor.red
@@ -32,12 +42,12 @@ class MyTableView: UITableView {
 extension MyTableView: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // Возвращает количество строк в таблице
-        return 0
+        models.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         // Возвращает ячейку для каждой строки
-        let cell = tableView.dequeueReusableCell(withIdentifier: CustomCell.reuseIdentifire, for: indexPath) as! CustomCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: CustomCell.reuseIdentifire, for: indexPath)
         return cell
     }
 }
@@ -91,7 +101,6 @@ class ViewController: UIViewController {
     }
     
     private func loadImage(_ url: String, image: UIImageView) {
-        // Check if the image is already cached
         if let cachedImage = imageCache.object(forKey: url as NSString) {
             image.image = cachedImage
             return
@@ -101,7 +110,6 @@ class ViewController: UIViewController {
                let data = try? Data(contentsOf: imageUrl),
                let downloadedImage = UIImage(data: data) {
                 
-                // Cache the downloaded image
                 DispatchQueue.main.async { [self] in
                     imageCache.setObject(downloadedImage, forKey: imageUrl.absoluteString as NSString)
                     image.image = downloadedImage
